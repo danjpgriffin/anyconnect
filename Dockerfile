@@ -1,0 +1,47 @@
+FROM ubuntu:focal
+LABEL maintainer="github.mk@xiragon.com"
+
+ENV TERM linux
+
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
+    apt-get update && \
+    apt-get install -y \
+    wget \
+    libxml2 \
+    openssl \
+    iproute2 \
+    kmod \
+    iptables \
+    ca-certificates \
+    file
+
+RUN mkdir /root/Install
+WORKDIR /root/Install
+COPY packages/anyconnect.tar.gz .
+COPY packages/cortex.deb .
+
+RUN tar xzf anyconnect.tar.gz && \
+    mv anyconnect-* anyconnect && \
+    bash -c "mkdir -p /usr/share/icons/hicolor/{48x48,64x64,96x96,128x128,256x256}/apps /usr/share/desktop-directories /usr/share/applications/" 
+
+WORKDIR /root/Install/anyconnect/vpn
+RUN yes | ./vpn_install.sh 2 > /dev/null
+
+RUN mv /opt/.cisco/certificates/ca /opt/.cisco/certificates/ca.orig && \
+    ln -sf /etc/ssl/certs/ /opt/.cisco/certificates/ca
+
+WORKDIR /root
+
+COPY docker/entrypoint.sh /entrypoint.sh
+COPY docker/fix-firewall.sh /fix-firewall.sh
+COPY docker/systemctl /sbin/systemctl
+COPY docker/start-traps.sh /start-traps.sh
+
+RUN chmod +x /entrypoint.sh && \
+    chmod +x /fix-firewall.sh && \
+    chmod +x /sbin/systemctl && \
+    chmod +x /fix-firewall.sh
+
+RUN apt-get install /root/Install/cortex.deb
+
+ENTRYPOINT /entrypoint.sh

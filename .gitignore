@@ -1,0 +1,6 @@
+config/resolv.template
+config/client/
+resolv.conf
+/.idea/
+packages/*.deb
+packages/*.tar.gz

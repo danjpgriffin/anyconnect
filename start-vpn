@@ -1,0 +1,76 @@
+#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+  echo "Please run the start-vpn script as as root" 1>&2
+  exit 1
+fi
+
+DIR=$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
+cd "$DIR"
+
+cp /etc/resolv.conf ./resolv.conf
+
+if [ ! -f packages/anyconnect.tar.gz ]; then
+  echo "Please place your anyconnect linux packages in packages/anyconnect.tar.gz"
+  exit 1
+fi
+
+if [ ! -f packages/cortex.deb ]; then
+  echo "Please place your cortex/traps installer in packages/cortex.deb"
+  exit 1
+fi
+
+if [ ! -f config/resolv.template ]; then
+  echo "Please create a resolve.conf template and place it in file config/resolv.template"
+  exit 1
+fi
+
+if [ ! -f config/client/*.pem ]; then
+  echo "Please place your public VPN key in config/client directory"
+  exit 1
+fi
+
+if [ ! -f config/client/private/*.key ]; then
+  echo "Please place your private VPN key in config/client/private directory"
+  exit 1
+fi
+
+. config/routes
+
+docker network ls | grep vpn-network > /dev/null
+HAS_NETWORK=$?
+if [ $HAS_NETWORK -ne 0 ]; then
+  echo "Creating docker network for VPN"
+  docker network create --subnet=172.19.0.0/16 vpn-network
+fi
+
+echo "Enabling cross-docker bridge communications with VPN"
+NETWORK_ID=br-`docker network ls | grep vpn-network | cut -f 1 -d' '`
+iptables -F DOCKER-USER
+iptables -A DOCKER-USER -o $NETWORK_ID -j ACCEPT
+iptables -A DOCKER-USER -i $NETWORK_ID -j ACCEPT
+
+docker image ls | grep vpn-anyconnect > /dev/null
+HAS_IMAGE=$?
+if [ $HAS_IMAGE -ne 0 ]; then
+  echo "Creating docker image for VPN"
+  docker build --tag vpn-anyconnect . 
+fi
+
+echo "Starting VPN"
+
+mv /etc/resolv.conf /etc/resolv.conf.vpn-orig
+cp config/resolv.template /etc/resolv.conf
+
+for r in ${routes[@]}; do
+  ip route add $r via 172.19.0.2
+done
+
+docker run --name vpn-anyconnect --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti -v "$(pwd)/resolv.conf":/resolv.conf -v "$(pwd)/config/client":/root/.cisco/certificates/client --net vpn-network --ip 172.19.0.2 --rm vpn-anyconnect
+echo "Restoring original configuration"
+
+for r in ${routes[@]}; do
+  ip route del $r via 172.19.0.2
+done
+
+mv /etc/resolv.conf.vpn-orig /etc/resolv.conf
