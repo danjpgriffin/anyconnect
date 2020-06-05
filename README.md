@@ -1,8 +1,12 @@
+## About
+This project enables a linux host to run Cisco Anyconnect and Traps/Cortex in a docker container. The wrapper
+script then routes selected network ranges to the VPN. Currently all DNS traffic is sent through the VPN
+
 ## To configure
 
 All configuration is performed in the config/ directory
 
-*. Create a client directory structure that contains your public and private keys:
+* Create a client directory structure that contains your public and private keys:
 ```
 +config/client
 +-- <User ID>.pem
