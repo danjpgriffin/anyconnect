@@ -22,7 +22,7 @@ nameserver 10.20.30.40
 nameserver 10.20.31.40
 search mycompany.com
 ```
-* Specify the routes you wish to forward through the VPN in the file config/routes. Only these files will
+* Specify the routes you wish to forward through the VPN in the file config/routes. Only these routes will
 be routed via the VPN. For example:
 ```
 routes=(10.0.0.0/8)
