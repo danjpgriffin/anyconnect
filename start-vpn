@@ -8,8 +8,6 @@ fi
 DIR=$(cd -P -- "$(dirname -- "$(readlink -f "$0")")" && pwd -P)
 cd "$DIR"
 
-cp /etc/resolv.conf ./resolv.conf
-
 if [ ! -f packages/anyconnect.tar.gz ]; then
   echo "Please place your anyconnect linux packages in packages/anyconnect.tar.gz"
   exit 1
@@ -66,7 +64,7 @@ for r in ${routes[@]}; do
   ip route add $r via 172.19.0.2
 done
 
-docker run --name vpn-anyconnect --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti -v "$(pwd)/resolv.conf":/resolv.conf -v "$(pwd)/config/client":/root/.cisco/certificates/client --net vpn-network --ip 172.19.0.2 --rm vpn-anyconnect
+docker run --name vpn-anyconnect --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti -v "$(pwd)/config/client":/root/.cisco/certificates/client --net vpn-network --ip 172.19.0.2 --rm vpn-anyconnect
 echo "Restoring original configuration"
 
 for r in ${routes[@]}; do
