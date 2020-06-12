@@ -1,5 +1,6 @@
 config/resolv.template
 config/client/
+config/response.txt
 resolv.conf
 /.idea/
 packages/*.deb

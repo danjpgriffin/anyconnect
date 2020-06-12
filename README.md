@@ -32,6 +32,14 @@ be routed via the VPN. For example:
 routes=(10.0.0.0/8)
 ```
 Additional routes are space separated (it is a normal bash array)
+* Optionally add a response file called `config/response.txt`. If present, the commands in this file will be read to work non-interactively. You will also be prompted separately to enter your password, which is then available as `$VPN_PASSWORD` in the response file. For example:
+```
+connect vpn.mycompany.com
+1
+vpn-username
+$VPN_PASSWORD
+y
+```
 
 ## To run
 
