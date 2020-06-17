@@ -9,5 +9,11 @@ sysctl net.ipv4.conf.all.forwarding=1
 /start-traps.sh &
 
 /opt/cisco/anyconnect/bin/vpnagentd
-/opt/cisco/anyconnect/bin/vpn
 
+if [ -f /response.txt ]; then
+  cat /response.txt | envsubst '$VPN_PASSWORD' | /opt/cisco/anyconnect/bin/vpn -s && \
+  unset VPN_PASSWORD && \
+  tail -f /dev/null
+else
+  /opt/cisco/anyconnect/bin/vpn
+fi

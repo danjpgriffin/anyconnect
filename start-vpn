@@ -33,6 +33,22 @@ if [ ! -f config/client/private/*.key ]; then
   exit 1
 fi
 
+if [ -f config/response.txt ]; then
+  if ! grep -q '\$VPN_PASSWORD' config/response.txt; then
+    echo 'Please make sure to reference VPN_PASSWORD in config/response.txt'
+    exit 1
+  fi
+
+  echo -n 'VPN password: '
+  read -s VPN_PASSWORD
+  echo
+  export VPN_PASSWORD
+
+  MOUNT_RESPONSE_FILE="-e VPN_PASSWORD -v $(pwd)/config/response.txt:/response.txt"
+else
+  MOUNT_RESPONSE_FILE=''
+fi
+
 . config/routes
 
 docker network ls | grep vpn-network > /dev/null
@@ -53,18 +69,22 @@ HAS_IMAGE=$?
 if [ $HAS_IMAGE -ne 0 ]; then
   echo "Creating docker image for VPN"
   docker build --tag vpn-anyconnect . 
+else
+  echo 'Updating Docker image...'
+  docker build -q --tag vpn-anyconnect . >/dev/null || exit 1
 fi
 
 echo "Starting VPN"
 
 mv /etc/resolv.conf /etc/resolv.conf.vpn-orig
 cp config/resolv.template /etc/resolv.conf
+chmod a+r /etc/resolv.conf
 
 for r in ${routes[@]}; do
   ip route add $r via 172.19.0.2
 done
 
-docker run --name vpn-anyconnect --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti -v "$(pwd)/config/client":/root/.cisco/certificates/client --net vpn-network --ip 172.19.0.2 --rm vpn-anyconnect
+docker run --name vpn-anyconnect --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti -v "$(pwd)/config/client":/root/.cisco/certificates/client $MOUNT_RESPONSE_FILE --net vpn-network --ip 172.19.0.2 --rm vpn-anyconnect
 echo "Restoring original configuration"
 
 for r in ${routes[@]}; do

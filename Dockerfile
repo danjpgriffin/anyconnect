@@ -13,7 +13,8 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
     kmod \
     iptables \
     ca-certificates \
-    file
+    file \
+    gettext-base
 
 RUN mkdir /root/Install
 WORKDIR /root/Install
