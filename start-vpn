@@ -1,5 +1,11 @@
 #!/bin/bash
 
+DOCKER=docker
+if podman --version >/dev/null 2>&1; then
+  echo "Using Podman as Docker client"
+  DOCKER=podman
+fi
+
 if [[ $EUID -ne 0 ]]; then
   echo "Please run the start-vpn script as as root" 1>&2
   exit 1
@@ -51,27 +57,27 @@ fi
 
 . config/routes
 
-docker network ls | grep vpn-network > /dev/null
+"$DOCKER" network ls | grep vpn-network > /dev/null
 HAS_NETWORK=$?
 if [ $HAS_NETWORK -ne 0 ]; then
   echo "Creating docker network for VPN"
-  docker network create --subnet=172.19.0.0/16 vpn-network
+  "$DOCKER" network create --subnet=172.19.0.0/16 vpn-network
 fi
 
 echo "Enabling cross-docker bridge communications with VPN"
-NETWORK_ID=br-`docker network ls | grep vpn-network | cut -f 1 -d' '`
+NETWORK_ID=br-`"$DOCKER" network ls | grep vpn-network | cut -f 1 -d' '`
 iptables -F DOCKER-USER
 iptables -A DOCKER-USER -o $NETWORK_ID -j ACCEPT
 iptables -A DOCKER-USER -i $NETWORK_ID -j ACCEPT
 
-docker image ls | grep vpn-anyconnect > /dev/null
+"$DOCKER" image ls | grep vpn-anyconnect > /dev/null
 HAS_IMAGE=$?
 if [ $HAS_IMAGE -ne 0 ]; then
   echo "Creating docker image for VPN"
-  docker build --tag vpn-anyconnect . 
+  "$DOCKER" build --tag vpn-anyconnect . 
 else
   echo 'Updating Docker image...'
-  docker build -q --tag vpn-anyconnect . >/dev/null || exit 1
+  "$DOCKER" build -q --tag vpn-anyconnect . >/dev/null || exit 1
 fi
 
 echo "Starting VPN"
@@ -84,7 +90,7 @@ for r in ${routes[@]}; do
   ip route add $r via 172.19.0.2
 done
 
-docker run --name vpn-anyconnect --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti -v "$(pwd)/config/client":/root/.cisco/certificates/client $MOUNT_RESPONSE_FILE --net vpn-network --ip 172.19.0.2 --rm vpn-anyconnect
+"$DOCKER" run --name vpn-anyconnect --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti -v "$(pwd)/config/client":/root/.cisco/certificates/client $MOUNT_RESPONSE_FILE --net vpn-network --ip 172.19.0.2 --rm vpn-anyconnect
 echo "Restoring original configuration"
 
 for r in ${routes[@]}; do
