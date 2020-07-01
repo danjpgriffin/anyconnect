@@ -40,7 +40,7 @@ if [ -f config/response.txt ]; then
   fi
 
   echo -n 'VPN password: '
-  read -s VPN_PASSWORD
+  read -sr VPN_PASSWORD
   echo
   export VPN_PASSWORD
 
