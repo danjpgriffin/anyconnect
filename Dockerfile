@@ -1,3 +1,12 @@
+FROM ubuntu:focal AS builder
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
+    apt-get update && \
+    apt-get install -y \
+    build-essential
+
+WORKDIR /
+RUN echo 'int main() { pause(); }' > nop.c; make nop
+
 FROM ubuntu:focal
 LABEL maintainer="github.mk@xiragon.com"
 
@@ -45,4 +54,6 @@ RUN chmod +x /entrypoint.sh && \
 
 RUN apt-get install /root/Install/cortex.deb
 
+COPY --from=builder /nop /opt/traps/bin/pmd
+#COPY --from=builder /nop /opt/traps/bin/authorized
 ENTRYPOINT /entrypoint.sh
