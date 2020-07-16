@@ -4,18 +4,7 @@ script then routes selected network ranges to the VPN. Currently all DNS traffic
 
 ## To configure
 
-All configuration is performed in the config/ directory
-
-* Create a client directory structure that contains your public and private keys:
-```
-+config/client
-+-- <User ID>.pem
-+--private
-|  +-- <User ID>.key 
-|
-```
-
-These should be the same as the originally created keys for openconnect.
+All configuration is performed in the `config/` directory
 
 * Obtain the AnyConnect linux installer program. Place in the file 'packages/anyconnect.tar.gz'
 * Obtain the "Traps/Cortex" debian linux installer. Place in the file 'packages/cortex.deb' directory. 

@@ -29,16 +29,6 @@ if [ ! -f config/resolv.template ]; then
   exit 1
 fi
 
-if [ ! -f config/client/*.pem ]; then
-  echo "Please place your public VPN key in config/client directory"
-  exit 1
-fi
-
-if [ ! -f config/client/private/*.key ]; then
-  echo "Please place your private VPN key in config/client/private directory"
-  exit 1
-fi
-
 if [ -f config/response.txt ]; then
   if ! grep -q '\$VPN_PASSWORD' config/response.txt; then
     echo 'Please make sure to reference VPN_PASSWORD in config/response.txt'
@@ -90,7 +80,7 @@ for r in ${routes[@]}; do
   ip route add $r via 172.19.0.2
 done
 
-"$DOCKER" run --name vpn-anyconnect --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti -v "$(pwd)/config/client":/root/.cisco/certificates/client $MOUNT_RESPONSE_FILE --net vpn-network --ip 172.19.0.2 --rm vpn-anyconnect
+"$DOCKER" run --name vpn-anyconnect --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti $MOUNT_RESPONSE_FILE --net vpn-network --ip 172.19.0.2 --rm vpn-anyconnect
 echo "Restoring original configuration"
 
 for r in ${routes[@]}; do
