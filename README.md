@@ -13,7 +13,7 @@ All configuration is performed in the `config/` directory
 nameserver 172.19.0.2
 search mycompany.com
 ```
-Alternatively, if your system uses `systemd-resolved` for providing name resolution to local applications (check with `systemctl is-active systemd-resolved.service`) create a config/systemd-resolved.template file with the following format:
+* Alternatively, if your system uses `systemd-resolved` for providing name resolution to local applications (check with `systemctl is-active systemd-resolved.service`) create a config/systemd-resolved.template file with the following format:
 
 ```
 [Resolve]
