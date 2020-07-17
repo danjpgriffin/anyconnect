@@ -24,7 +24,13 @@ if [ ! -f packages/cortex.deb ]; then
   exit 1
 fi
 
-if [ ! -f config/resolv.template ]; then
+if systemctl -q is-active systemd-resolved.service 2>/dev/null; then
+  if [ ! -f config/systemd-resolved.template ]; then
+    echo "Please create a systemd-resolved config template and place it in file config/systemd-resolved.template"
+    exit 1
+  fi
+  USE_SYSTEMD_RESOLVED=true
+elif [ ! -f config/resolv.template ]; then
   echo "Please create a resolve.conf template and place it in file config/resolv.template"
   exit 1
 fi
@@ -72,9 +78,15 @@ fi
 
 echo "Starting VPN"
 
-mv /etc/resolv.conf /etc/resolv.conf.vpn-orig
-cp config/resolv.template /etc/resolv.conf
-chmod a+r /etc/resolv.conf
+if [ -z $USE_SYSTEMD_RESOLVED ]; then
+  mv /etc/resolv.conf /etc/resolv.conf.vpn-orig
+  cp config/resolv.template /etc/resolv.conf
+  chmod a+r /etc/resolv.conf
+else
+  mkdir -p /etc/systemd/resolved.conf.d/
+  cp config/systemd-resolved.template /etc/systemd/resolved.conf.d/anyconnect-dns-settings.conf
+  systemctl restart systemd-resolved.service
+fi
 
 for r in ${routes[@]}; do
   ip route add $r via 172.19.0.2
@@ -87,4 +99,9 @@ for r in ${routes[@]}; do
   ip route del $r via 172.19.0.2
 done
 
-mv /etc/resolv.conf.vpn-orig /etc/resolv.conf
+if [ -z $USE_SYSTEMD_RESOLVED ]; then
+  mv /etc/resolv.conf.vpn-orig /etc/resolv.conf
+else
+  rm /etc/systemd/resolved.conf.d/anyconnect-dns-settings.conf
+  systemctl restart systemd-resolved.service
+fi

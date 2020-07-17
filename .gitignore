@@ -1,4 +1,5 @@
 config/resolv.template
+config/systemd-resolved.template
 config/client/
 config/response.txt
 resolv.conf
