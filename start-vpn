@@ -41,7 +41,7 @@ if [ -f config/response.txt ]; then
     exit 1
   fi
 
-  while [ -z $VPN_PASSWORD ]; do
+  while [ -z "$VPN_PASSWORD" ]; do
     echo -n 'VPN password: '
     read -sr VPN_PASSWORD
     echo
