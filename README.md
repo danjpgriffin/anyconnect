@@ -35,6 +35,7 @@ vpn-username
 $VPN_PASSWORD
 y
 ```
+* Further, it is also possible to provide an existing AnyConnect profile as config/AnyConnectProfile.xml. In that case, adjust your config/response.txt file accordingly.
 
 ## To run
 
