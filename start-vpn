@@ -76,6 +76,14 @@ mv /etc/resolv.conf /etc/resolv.conf.vpn-orig
 cp config/resolv.template /etc/resolv.conf
 chmod a+r /etc/resolv.conf
 
+restart_systemd_resolved() {
+  # Restart systemd-resolved service if it is present and active
+  if systemctl -q is-active systemd-resolved.service 2>/dev/null; then
+    systemctl restart systemd-resolved.service;
+  fi
+}
+restart_systemd_resolved
+
 for r in ${routes[@]}; do
   ip route add $r via 172.19.0.2
 done
@@ -88,3 +96,4 @@ for r in ${routes[@]}; do
 done
 
 mv /etc/resolv.conf.vpn-orig /etc/resolv.conf
+restart_systemd_resolved
