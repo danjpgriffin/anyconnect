@@ -37,7 +37,6 @@ COPY docker/entrypoint.sh /entrypoint.sh
 COPY docker/fix-firewall.sh /fix-firewall.sh
 COPY docker/systemctl /sbin/systemctl
 COPY docker/start-traps.sh /start-traps.sh
-COPY docker/stop-traps.sh /stop-traps.sh
 
 RUN chmod +x /entrypoint.sh && \
     chmod +x /fix-firewall.sh && \
