@@ -8,6 +8,8 @@ sysctl net.ipv4.conf.all.forwarding=1
 /fix-firewall.sh &
 /start-traps.sh &
 
+service dnsmasq start
+
 /opt/cisco/anyconnect/bin/vpnagentd
 
 if [ -f /response.txt ]; then

@@ -14,7 +14,8 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
     iptables \
     ca-certificates \
     file \
-    gettext-base
+    gettext-base \
+    dnsmasq
 
 RUN mkdir /root/Install
 WORKDIR /root/Install

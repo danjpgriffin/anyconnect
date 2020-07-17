@@ -8,11 +8,9 @@ All configuration is performed in the `config/` directory
 
 * Obtain the AnyConnect linux installer program. Place in the file 'packages/anyconnect.tar.gz'
 * Obtain the "Traps/Cortex" debian linux installer. Place in the file 'packages/cortex.deb' directory. 
-* Create a config/resolv.template file containing the VPN's DNS configuration, for example:
+* Create a config/resolv.template file containing the IP address of the container as nameserver and optionally the search domains you want to use. The container will forward DNS queries to the nameservers provided by the VPN connection or in interactive mode when no connection is established yet to 8.8.8.8 (Google):
 ```
-domain mycompany.com
-nameserver 10.20.30.40
-nameserver 10.20.31.40
+nameserver 172.19.0.2
 search mycompany.com
 ```
 * Specify the routes you wish to forward through the VPN in the file config/routes. Only these routes will
