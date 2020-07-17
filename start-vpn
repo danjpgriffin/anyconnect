@@ -41,9 +41,11 @@ if [ -f config/response.txt ]; then
     exit 1
   fi
 
-  echo -n 'VPN password: '
-  read -sr VPN_PASSWORD
-  echo
+  while [ -z $VPN_PASSWORD ]; do
+    echo -n 'VPN password: '
+    read -sr VPN_PASSWORD
+    echo
+  done
   export VPN_PASSWORD
 
   MOUNT_RESPONSE_FILE="-e VPN_PASSWORD -v $(pwd)/config/response.txt:/response.txt"
