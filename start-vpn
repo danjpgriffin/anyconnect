@@ -99,7 +99,7 @@ for r in ${routes[@]}; do
   ip route add $r via 172.19.0.2
 done
 
-"$DOCKER" run --name vpn-anyconnect --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti $MOUNT_RESPONSE_FILE $MOUNT_ANYCONNECT_PROFILE --net vpn-network --ip 172.19.0.2 --rm vpn-anyconnect
+"$DOCKER" run --name vpn-anyconnect --hostname $(hostname) --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti $MOUNT_RESPONSE_FILE $MOUNT_ANYCONNECT_PROFILE --net vpn-network --ip 172.19.0.2 --rm vpn-anyconnect
 echo "Restoring original configuration"
 
 for r in ${routes[@]}; do
