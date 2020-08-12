@@ -89,8 +89,7 @@ chmod a+r /etc/resolv.conf
 for r in ${routes[@]}; do
   ip route add $r via 172.19.0.2
 done
-
-"$DOCKER" run --name vpn-anyconnect --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti -v "$(pwd)/config/client":/root/.cisco/certificates/client $MOUNT_RESPONSE_FILE --net vpn-network --ip 172.19.0.2 --rm vpn-anyconnect
+"$DOCKER" run --name vpn-anyconnect --hostname $(hostname) --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti -v "$(pwd)/config/client":/root/.cisco/certificates/client -v "$(pwd)/config/profile":/opt/cisco/anyconnect/profile $MOUNT_RESPONSE_FILE --net vpn-network --ip 172.19.0.2 --rm vpn-anyconnect
 echo "Restoring original configuration"
 
 for r in ${routes[@]}; do
