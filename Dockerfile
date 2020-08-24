@@ -28,6 +28,9 @@ RUN tar xzf anyconnect.tar.gz && \
 WORKDIR /root/Install/anyconnect/vpn
 RUN yes | ./vpn_install.sh 2 > /dev/null
 
+WORKDIR /root/Install/anyconnect/posture
+RUN ./posture_install.sh --no-license 2 > /dev/null
+
 RUN mv /opt/.cisco/certificates/ca /opt/.cisco/certificates/ca.orig && \
     ln -sf /etc/ssl/certs/ /opt/.cisco/certificates/ca
 
