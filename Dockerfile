@@ -31,6 +31,9 @@ RUN yes | ./vpn_install.sh 2 > /dev/null
 
 RUN ln -sf /etc/ssl/certs/ca-certificates.crt /opt/.cisco/certificates/ca/ca-certificates.pem
 
+WORKDIR /root/Install/anyconnect/posture
+RUN ./posture_install.sh --no-license > /dev/null
+
 WORKDIR /root
 
 COPY docker/entrypoint.sh /entrypoint.sh
