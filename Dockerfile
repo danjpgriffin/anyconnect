@@ -15,6 +15,7 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
     ca-certificates \
     file \
     gettext-base \
+    libglib2.0-0 \
     dnsmasq
 
 RUN mkdir /root/Install
