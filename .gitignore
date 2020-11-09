@@ -1,7 +1,9 @@
 config/resolv.template
+config/systemd-resolved.template
 config/client/
 config/profile/
 config/response.txt
+config/AnyConnectProfile.xml
 resolv.conf
 /.idea/
 packages/*.deb

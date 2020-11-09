@@ -14,7 +14,9 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
     iptables \
     ca-certificates \
     file \
-    gettext-base
+    gettext-base \
+    libglib2.0-0 \
+    dnsmasq
 
 RUN mkdir /root/Install
 WORKDIR /root/Install
@@ -28,8 +30,10 @@ RUN tar xzf anyconnect.tar.gz && \
 WORKDIR /root/Install/anyconnect/vpn
 RUN yes | ./vpn_install.sh 2 > /dev/null
 
-RUN mv /opt/.cisco/certificates/ca /opt/.cisco/certificates/ca.orig && \
-    ln -sf /etc/ssl/certs/ /opt/.cisco/certificates/ca
+RUN ln -sf /etc/ssl/certs/ca-certificates.crt /opt/.cisco/certificates/ca/ca-certificates.pem
+
+WORKDIR /root/Install/anyconnect/posture
+RUN ./posture_install.sh --no-license > /dev/null
 
 WORKDIR /root
 

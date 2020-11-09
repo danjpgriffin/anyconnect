@@ -1,15 +1,15 @@
 #!/bin/bash
 
 keep_forwarding_clear() {
-	iptables -L FORWARD | grep ciscovpn > /dev/null
+	iptables -w -L FORWARD | grep ciscovpn > /dev/null
 	FOUND=$?
 
 	if [ $FOUND -eq 0 ] ; then
 	    echo Flushing forwarding restrictions
-	    iptables -F FORWARD
+	    iptables -w -F FORWARD
 	    echo Setting up masquarade
-	    iptables -t nat -D POSTROUTING -o cscotun0 -j MASQUERADE > /dev/null
-	    iptables -t nat -A POSTROUTING -o cscotun0 -j MASQUERADE
+	    iptables -w -t nat -D POSTROUTING -o cscotun0 -j MASQUERADE > /dev/null
+	    iptables -w -t nat -A POSTROUTING -o cscotun0 -j MASQUERADE
 	fi
 }
 

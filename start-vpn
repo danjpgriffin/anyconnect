@@ -24,18 +24,14 @@ if [ ! -f packages/cortex.deb ]; then
   exit 1
 fi
 
-if [ ! -f config/resolv.template ]; then
+if systemctl -q is-active systemd-resolved.service 2>/dev/null; then
+  if [ ! -f config/systemd-resolved.template ]; then
+    echo "Please create a systemd-resolved config template and place it in file config/systemd-resolved.template"
+    exit 1
+  fi
+  USE_SYSTEMD_RESOLVED=true
+elif [ ! -f config/resolv.template ]; then
   echo "Please create a resolve.conf template and place it in file config/resolv.template"
-  exit 1
-fi
-
-if [ ! -f config/client/*.pem ]; then
-  echo "Please place your public VPN key in config/client directory"
-  exit 1
-fi
-
-if [ ! -f config/client/private/*.key ]; then
-  echo "Please place your private VPN key in config/client/private directory"
   exit 1
 fi
 
@@ -45,9 +41,11 @@ if [ -f config/response.txt ]; then
     exit 1
   fi
 
-  echo -n 'VPN password: '
-  read -sr VPN_PASSWORD
-  echo
+  while [ -z "$VPN_PASSWORD" ]; do
+    echo -n 'VPN password: '
+    read -sr VPN_PASSWORD
+    echo
+  done
   export VPN_PASSWORD
 
   MOUNT_RESPONSE_FILE="-e VPN_PASSWORD -v $(pwd)/config/response.txt:/response.txt"
@@ -55,6 +53,11 @@ else
   MOUNT_RESPONSE_FILE=''
 fi
 
+if [ -f config/AnyConnectProfile.xml ]; then
+  MOUNT_ANYCONNECT_PROFILE="-v $(pwd)/config/AnyConnectProfile.xml:/opt/cisco/anyconnect/profile/AnyConnectProfile.xml"
+else
+  MOUNT_ANYCONNECT_PROFILE=''
+fi
 . config/routes
 
 "$DOCKER" network ls | grep vpn-network > /dev/null
@@ -82,18 +85,30 @@ fi
 
 echo "Starting VPN"
 
-mv /etc/resolv.conf /etc/resolv.conf.vpn-orig
-cp config/resolv.template /etc/resolv.conf
-chmod a+r /etc/resolv.conf
+if [ -z $USE_SYSTEMD_RESOLVED ]; then
+  mv /etc/resolv.conf /etc/resolv.conf.vpn-orig
+  cp config/resolv.template /etc/resolv.conf
+  chmod a+r /etc/resolv.conf
+else
+  mkdir -p /etc/systemd/resolved.conf.d/
+  cp config/systemd-resolved.template /etc/systemd/resolved.conf.d/anyconnect-dns-settings.conf
+  systemctl restart systemd-resolved.service
+fi
 
 for r in ${routes[@]}; do
   ip route add $r via 172.19.0.2
 done
-"$DOCKER" run --name vpn-anyconnect --hostname $(hostname) --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti -v "$(pwd)/config/client":/root/.cisco/certificates/client -v "$(pwd)/config/profile":/opt/cisco/anyconnect/profile $MOUNT_RESPONSE_FILE --net vpn-network --ip 172.19.0.2 --rm vpn-anyconnect
+
+"$DOCKER" run --name vpn-anyconnect --hostname $(hostname) --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti $MOUNT_RESPONSE_FILE $MOUNT_ANYCONNECT_PROFILE --net vpn-network --ip 172.19.0.2 --rm vpn-anyconnect
 echo "Restoring original configuration"
 
 for r in ${routes[@]}; do
   ip route del $r via 172.19.0.2
 done
 
-mv /etc/resolv.conf.vpn-orig /etc/resolv.conf
+if [ -z $USE_SYSTEMD_RESOLVED ]; then
+  mv /etc/resolv.conf.vpn-orig /etc/resolv.conf
+else
+  rm /etc/systemd/resolved.conf.d/anyconnect-dns-settings.conf
+  systemctl restart systemd-resolved.service
+fi
