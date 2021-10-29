@@ -16,7 +16,8 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
     file \
     gettext-base \
     libglib2.0-0 \
-    dnsmasq
+    dnsmasq \
+    libgtk-3-0
 
 RUN mkdir /root/Install
 WORKDIR /root/Install
