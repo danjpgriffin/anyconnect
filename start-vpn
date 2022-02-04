@@ -64,7 +64,7 @@ fi
 HAS_NETWORK=$?
 if [ $HAS_NETWORK -ne 0 ]; then
   echo "Creating docker network for VPN"
-  "$DOCKER" network create --subnet=172.19.0.0/16 vpn-network
+  "$DOCKER" network create --subnet=10.200.64.0/24 vpn-network
 fi
 
 echo "Enabling cross-docker bridge communications with VPN"
@@ -96,14 +96,14 @@ else
 fi
 
 for r in ${routes[@]}; do
-  ip route add $r via 172.19.0.2
+  ip route add $r via 10.200.64.2
 done
 
-"$DOCKER" run --name vpn-anyconnect --hostname $(hostname) --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti $MOUNT_RESPONSE_FILE $MOUNT_ANYCONNECT_PROFILE --net vpn-network --ip 172.19.0.2 --rm vpn-anyconnect
+"$DOCKER" run --name vpn-anyconnect --hostname $(hostname) --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti $MOUNT_RESPONSE_FILE $MOUNT_ANYCONNECT_PROFILE --net vpn-network --ip 10.200.64.2 --rm vpn-anyconnect
 echo "Restoring original configuration"
 
 for r in ${routes[@]}; do
-  ip route del $r via 172.19.0.2
+  ip route del $r via 10.200.64.2
 done
 
 if [ -z $USE_SYSTEMD_RESOLVED ]; then
