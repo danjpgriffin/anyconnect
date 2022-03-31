@@ -35,6 +35,17 @@ vpn-username
 $VPN_PASSWORD
 y
 ```
+
+If you use multi-factor authentication, additional lines in the response file might be required. If the response file contains `$VPN_TOTP`, you will be prompted for a "time-based one-time password" (e.g. from Google Authenticator). Example:
+```
+connect vpn.mycompany.com
+5
+vpn-username
+$VPN_PASSWORD
+$VPN_TOTP
+y
+```
+
 * Further, it is also possible to provide an existing AnyConnect profile as config/AnyConnectProfile.xml. In that case, adjust your config/response.txt file accordingly.
 
 ## To run

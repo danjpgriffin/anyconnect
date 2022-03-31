@@ -13,8 +13,9 @@ service dnsmasq start
 /opt/cisco/anyconnect/bin/vpnagentd
 
 if [ -f /response.txt ]; then
-  cat /response.txt | envsubst '$VPN_PASSWORD' | /opt/cisco/anyconnect/bin/vpn -s && \
+  cat /response.txt | envsubst '$VPN_PASSWORD $VPN_TOTP' | /opt/cisco/anyconnect/bin/vpn -s && \
   unset VPN_PASSWORD && \
+  unset VPN_TOTP && \
   echo "Enjoy your VPN connection!" && \
   tail -f /dev/null
 else

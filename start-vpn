@@ -48,7 +48,17 @@ if [ -f config/response.txt ]; then
   done
   export VPN_PASSWORD
 
-  MOUNT_RESPONSE_FILE="-e VPN_PASSWORD -v $(pwd)/config/response.txt:/response.txt"
+  if grep -q '\$VPN_TOTP' config/response.txt; then
+
+    while [ -z "$VPN_TOTP" ]; do
+      echo -n '[MFA] Enter a time-based one-time password: '
+      read -sr VPN_TOTP
+      echo
+    done
+    export VPN_TOTP
+  fi
+
+  MOUNT_RESPONSE_FILE="-e VPN_PASSWORD -e VPN_TOTP -v $(pwd)/config/response.txt:/response.txt"
 else
   MOUNT_RESPONSE_FILE=''
 fi
