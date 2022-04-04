@@ -97,10 +97,12 @@ echo "Starting VPN"
 
 if [ -z $USE_SYSTEMD_RESOLVED ]; then
   mv /etc/resolv.conf /etc/resolv.conf.vpn-orig
+  sed -i 's/172\.19\.0\.2/10.200.64.2/' config/resolv.template
   cp config/resolv.template /etc/resolv.conf
   chmod a+r /etc/resolv.conf
 else
   mkdir -p /etc/systemd/resolved.conf.d/
+  sed -i 's/172\.19\.0\.2/10.200.64.2/' config/systemd-resolved.template
   cp config/systemd-resolved.template /etc/systemd/resolved.conf.d/anyconnect-dns-settings.conf
   systemctl restart systemd-resolved.service
 fi
