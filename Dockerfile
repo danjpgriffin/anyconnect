@@ -50,4 +50,6 @@ RUN chmod +x /entrypoint.sh && \
 
 RUN apt-get install /root/Install/cortex.deb
 
+RUN mkdir -p /opt/foil && touch /opt/foil/.breathe.txt
+
 ENTRYPOINT /entrypoint.sh
