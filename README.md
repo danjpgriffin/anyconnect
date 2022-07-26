@@ -10,14 +10,14 @@ All configuration is performed in the `config/` directory
 * Obtain the "Traps/Cortex" debian linux installer. Place in the file 'packages/cortex.deb' directory. 
 * Create a config/resolv.template file containing the IP address of the container as nameserver and optionally the search domains you want to use. The container will forward DNS queries to the nameservers provided by the VPN connection or in interactive mode when no connection is established yet to 8.8.8.8 (Google):
 ```
-nameserver 172.19.0.2
+nameserver 10.200.64.2
 search mycompany.com
 ```
 * Alternatively, if your system uses `systemd-resolved` for providing name resolution to local applications (check with `systemctl is-active systemd-resolved.service`) create a config/systemd-resolved.template file with the following format:
 
 ```
 [Resolve]
-DNS=172.19.0.2
+DNS=10.200.64.2
 Domains=mycompany.com ~.
 ```
 
@@ -35,6 +35,17 @@ vpn-username
 $VPN_PASSWORD
 y
 ```
+
+If you use multi-factor authentication, additional lines in the response file might be required. If the response file contains `$VPN_TOTP`, you will be prompted for a "time-based one-time password" (e.g. from Google Authenticator). Example:
+```
+connect vpn.mycompany.com
+5
+vpn-username
+$VPN_PASSWORD
+$VPN_TOTP
+y
+```
+
 * Further, it is also possible to provide an existing AnyConnect profile as config/AnyConnectProfile.xml. In that case, adjust your config/response.txt file accordingly.
 
 ## To run

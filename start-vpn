@@ -48,7 +48,17 @@ if [ -f config/response.txt ]; then
   done
   export VPN_PASSWORD
 
-  MOUNT_RESPONSE_FILE="-e VPN_PASSWORD -v $(pwd)/config/response.txt:/response.txt"
+  if grep -q '\$VPN_TOTP' config/response.txt; then
+
+    while [ -z "$VPN_TOTP" ]; do
+      echo -n '[MFA] Enter a time-based one-time password: '
+      read -sr VPN_TOTP
+      echo
+    done
+    export VPN_TOTP
+  fi
+
+  MOUNT_RESPONSE_FILE="-e VPN_PASSWORD -e VPN_TOTP -v $(pwd)/config/response.txt:/response.txt"
 else
   MOUNT_RESPONSE_FILE=''
 fi
@@ -64,7 +74,7 @@ fi
 HAS_NETWORK=$?
 if [ $HAS_NETWORK -ne 0 ]; then
   echo "Creating docker network for VPN"
-  "$DOCKER" network create --subnet=172.19.0.0/16 vpn-network
+  "$DOCKER" network create --subnet=10.200.64.0/24 vpn-network
 fi
 
 echo "Enabling cross-docker bridge communications with VPN"
@@ -87,23 +97,25 @@ echo "Starting VPN"
 
 if [ -z $USE_SYSTEMD_RESOLVED ]; then
   mv /etc/resolv.conf /etc/resolv.conf.vpn-orig
+  sed -i 's/172\.19\.0\.2/10.200.64.2/' config/resolv.template
   cp config/resolv.template /etc/resolv.conf
   chmod a+r /etc/resolv.conf
 else
   mkdir -p /etc/systemd/resolved.conf.d/
+  sed -i 's/172\.19\.0\.2/10.200.64.2/' config/systemd-resolved.template
   cp config/systemd-resolved.template /etc/systemd/resolved.conf.d/anyconnect-dns-settings.conf
   systemctl restart systemd-resolved.service
 fi
 
 for r in ${routes[@]}; do
-  ip route add $r via 172.19.0.2
+  ip route add $r via 10.200.64.2
 done
 
-"$DOCKER" run --name vpn-anyconnect --hostname $(hostname) --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti $MOUNT_RESPONSE_FILE $MOUNT_ANYCONNECT_PROFILE --net vpn-network --ip 172.19.0.2 --rm vpn-anyconnect
+"$DOCKER" run --name vpn-anyconnect --hostname $(hostname) --privileged --cap-add NET_ADMIN --cap-add SYS_ADMIN -ti $MOUNT_RESPONSE_FILE $MOUNT_ANYCONNECT_PROFILE --net vpn-network --ip 10.200.64.2 --rm vpn-anyconnect
 echo "Restoring original configuration"
 
 for r in ${routes[@]}; do
-  ip route del $r via 172.19.0.2
+  ip route del $r via 10.200.64.2
 done
 
 if [ -z $USE_SYSTEMD_RESOLVED ]; then
