@@ -16,7 +16,8 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
     file \
     gettext-base \
     libglib2.0-0 \
-    dnsmasq
+    dnsmasq \
+    sudo
 
 RUN mkdir /root/Install
 WORKDIR /root/Install
@@ -41,12 +42,17 @@ COPY docker/entrypoint.sh /entrypoint.sh
 COPY docker/fix-firewall.sh /fix-firewall.sh
 COPY docker/systemctl /sbin/systemctl
 COPY docker/start-traps.sh /start-traps.sh
+COPY docker/start-anyconnect-vpn.sh /start-anyconnect-vpn.sh
 
 RUN chmod +x /entrypoint.sh && \
     chmod +x /fix-firewall.sh && \
     chmod +x /sbin/systemctl && \
-    chmod +x /fix-firewall.sh
+    chmod +x /fix-firewall.sh && \
+    chmod +x /start-anyconnect-vpn.sh
 
 RUN apt-get install /root/Install/cortex.deb
 
+RUN useradd -s /bin/bash --create-home atob
+
 ENTRYPOINT /entrypoint.sh
+
