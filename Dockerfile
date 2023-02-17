@@ -33,7 +33,7 @@ COPY packages/anyconnect.tar.gz .
 COPY packages/cortex.deb .
 
 RUN tar xzf anyconnect.tar.gz && \
-    mv anyconnect-* anyconnect && \
+    mv cisco-secure-client-linux64-* anyconnect && \
     bash -c "mkdir -p /usr/share/icons/hicolor/{48x48,64x64,96x96,128x128,256x256}/apps /usr/share/desktop-directories /usr/share/applications/" 
 
 WORKDIR /root/Install/anyconnect/vpn
